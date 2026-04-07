@@ -21,9 +21,10 @@ class Player{
         Player(){};
         ~Player(){};
         bool getHasAnvil() const;
-        std::string getPlayerSymbol(bool isAnvil, int line) const;
+        std::string getPlayerSymbol() const;
         std::string getPlayerName() const;
-        void useAnvil();
+        std::string getPlayerSymbolFormatted(bool isAnvil, int line) const;
+        bool useAnvil();
 
 };
 
@@ -37,10 +38,12 @@ class GameState{
         const int COLS = 7;
         std::vector<std::vector<Piece>> board;
 
+        
+
         bool isValidMove() const;
     public:
         GameState();
-        GameState(bool player2IsComputer);
+        GameState(Player player1, Player player2);
         ~GameState();
         void renderGame() const;
         bool makeMove(int col, Piece piece); //boolean so that isValidMove() can return to main
