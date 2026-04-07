@@ -71,7 +71,7 @@ void GameState::renderGame() const{
     cout << "--------------------------------" << endl;
 };
 bool GameState::makeMove(int col, Piece piece){ //boolean so that isValidMove() can return to main
-
+return true;
 }; 
 bool GameState::checkWin() const{};
 bool GameState::checkTie() const{};
