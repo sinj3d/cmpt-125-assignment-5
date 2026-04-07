@@ -2,13 +2,16 @@
 
 ## Names of Team Members
 
-
+ Shenghua Jin, sja204@sfu.ca, 301659564
+ Luke Choi, esc9@sfu.ca 301658198
 
 ## Platform and Tools
 
 what operating system(s) (e.g. Windows, macOS, Linux), compiler(s) (e.g. g++,
 clang++, etc.), and editor/IDE(s) (e.g. VS Code, Sublime Text, etc.) did you
 use?
+Shenghua: Using Windows and G++, with VS Code as my main editor.
+Luke: Using macOS and clang, with VS Code as the IDE
 
 ## Extra Features
 
@@ -16,12 +19,10 @@ if your program has any extra or special features, tell us about them here
 
 ## Limitations and Known Bugs
 
-list all known bugs here, including features that are missing or do not work as
-expected
 
 ## Help and References
 
-what people and tools helped you; if you used AI, how did you use it?
+AI for syntax examples of the code
 
 ## Statement of Originality
 

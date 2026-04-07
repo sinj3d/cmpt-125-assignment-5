@@ -11,6 +11,11 @@ enum class Piece{
     Player2Anvil,
 };
 
+struct Coordinate {
+    int row;
+    int col;
+}
+
 class Player{
     private:
         std::string playerName;
@@ -38,7 +43,7 @@ class GameState{
         const int COLS = 7;
         std::vector<std::vector<Piece>> board;
 
-        
+        Coordinate lastMove; //helps speedup checkWin by just checking the area around our last move
 
         bool isValidMove() const;
     public:

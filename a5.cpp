@@ -86,10 +86,11 @@ void GameState::renderGame() const{
     cout << "--------------------------------" << endl;
 };
 bool GameState::makeMove(int col, Piece piece){ //boolean so that isValidMove() can return to main
-return true;
+    return true;
 }; 
-bool GameState::checkWin() const{
+bool GameState::checkWin() const{ // check 4 axes around the last piece. We use an array of directions to improve readability
     
+
 };
 bool GameState::checkTie() const{
     for(int i = 0; i < COLS; i++){
