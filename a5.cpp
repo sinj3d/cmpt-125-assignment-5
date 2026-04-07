@@ -105,7 +105,7 @@ void titleScreen();
 void printBoard();
 
 void setupComputerGame(string& playerName, string& computerName, int& turnChoice);
-void setupPlayerGame(string& player1, string& player2);
+void setupPlayerGame(string& player1Name, string& player2Name);
 
 void makeMove();
 bool checkWin();
@@ -153,8 +153,9 @@ bool Player::useAnvil() {
 // GAMESTATE CLASS FUNCTION DEFINITIONS
 // ==========================================
 
-bool GameState::isValidMove() const{
-
+bool GameState::isValidMove(int col) const{
+    return board[0][col] == Piece::Empty;
+    
 };
 
 GameState::GameState() : board(ROWS, std::vector<Piece>(COLS, Piece::Empty)) {
@@ -163,9 +164,11 @@ GameState::GameState() : board(ROWS, std::vector<Piece>(COLS, Piece::Empty)) {
 GameState::GameState(Player player1, Player player2) : GameState() {
 
 }
+
 GameState::~GameState(){
 
 };
+
 void GameState::renderGame() const{
     for(int r = 0; r < ROWS; r++){
         for(int line = 0; line < 3; line ++){
@@ -188,14 +191,52 @@ void GameState::renderGame() const{
     }
     cout << "--------------------------------" << endl;
 };
-bool GameState::makeMove(int col, Piece piece){ //boolean so that isValidMove() can return to main
-    return true;
-}; 
+
 bool GameState::checkWin() const{ // check 4 axes around the last piece. We use an array of directions to improve readability
-    
+    Piece currentPiece = board[lastMove.row][lastMove.col];
+    if (currentPiece == Piece::Empty) return false;
+
+    const int directions[4][2] = {
+        {0, 1},   // Horizontal (Right)
+        {1, 0},   // Vertical (Down)
+        {1, 1},   // Diagonal (\)
+        {1, -1}   // Diagonal (/)
+    };
+
+    for (int i = 0; i < size(directions); i++) {
+        int dRow = directions[i][0];
+        int dCol = directions[i][1];
+        
+        int count = 1; // Start at 1 to include the piece that was just dropped
+
+        // Check FORWARD along the vector
+        int r = lastMove.row + dRow;
+        int c = lastMove.col + dCol;
+        while (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] == currentPiece) {
+            count++;
+            r += dRow; // Move one step further forward
+            c += dCol;
+        }
+
+        // Check BACKWARD along the vector
+        r = lastMove.row - dRow;
+        c = lastMove.col - dCol;
+        while (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] == currentPiece) {
+            count++;
+            r -= dRow; // Move one step further backward
+            c -= dCol;
+        }
+
+        if (count >= 4) {
+            return true;
+        }
+    }
+
+    return false;
 
 };
-bool GameState::checkTie() const{
+
+bool GameState::checkTie() const{ // check top row. If full, then tie
     for(int i = 0; i < COLS; i++){
         if(board[0][i] == Piece::Empty){
             return true;
@@ -203,3 +244,7 @@ bool GameState::checkTie() const{
     }
     return false;
 };
+
+bool GameState::makeMove(int col, Piece piece){ //boolean so that isValidMove() can return to main
+    
+}; 

@@ -7,7 +7,7 @@ void titleScreen();
 void printBoard();
 
 void setupComputerGame(string& playerName, string& computerName, int& turnChoice);
-void setupPlayerGame(string& player1, string& player2);
+void setupPlayerGame(string& player1Name, string& player2Name);
 
 void makeMove();
 bool checkWin();
@@ -29,7 +29,7 @@ enum class Piece{
 struct Coordinate {
     int row;
     int col;
-}
+};
 
 class Player{
     private:
@@ -40,10 +40,12 @@ class Player{
     public:
         Player(){};
         ~Player(){};
+
         bool getHasAnvil() const;
         std::string getPlayerSymbol() const;
         std::string getPlayerName() const;
         std::string getPlayerSymbolFormatted(bool isAnvil, int line) const;
+
         bool useAnvil();
 
 };
@@ -58,15 +60,17 @@ class GameState{
         const int COLS = 7;
         std::vector<std::vector<Piece>> board;
 
-        Coordinate lastMove; //helps speedup checkWin by just checking the area around our last move
+        Coordinate lastMove; //helps speed up checkWin by just checking the area around our last move
 
-        bool isValidMove() const;
+        bool isValidMove(int col) const;
     public:
         GameState();
         GameState(Player player1, Player player2);
         ~GameState();
+
         void renderGame() const;
-        bool makeMove(int col, Piece piece); //boolean so that isValidMove() can return to main
         bool checkWin() const;
         bool checkTie() const;
+
+        bool makeMove(int col, Piece piece); //boolean so that isValidMove() can return to main
 };
