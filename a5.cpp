@@ -7,9 +7,108 @@
 
 using namespace std;
 
+// Function prototypes to implement later
+void titleScreen();
+void printBoard();
+
+void setupComputerGame(string& playerName, string& computerName, int& turnChoice);
+void setupPlayerGame(string& player1, string& player2);
+
+void makeMove();
+bool checkWin();
+bool checkTie();
+
+void announceWinner();
+void announceTie();
+
+bool askPlayAgain();
+
+
 
 int main(){
     
+   bool playAgain = true;
+
+    while (playAgain) {
+        string player1;
+        string player2;
+        int gameMode;
+        int turnChoice;
+
+        // Title screen: game name, rules, anvil explanation
+        titleScreen();
+
+        // Ask for game mode
+        cout << "Choose a game mode:\n";
+        cout << "1. Play against the computer\n";
+        cout << "2. Play against another player\n";
+        cout << "Enter your choice: ";
+        cin >> gameMode;
+
+        if (gameMode == 1) {
+            // Computer mode
+            cout << "Enter your name: ";
+            cin >> player1;
+
+            player2 = "Computer";
+
+            // Ask if player wants to go first, second, or random
+            cout << "\nWho should go first?\n";
+            cout << "1. " << player1 << " goes first\n";
+            cout << "2. Computer goes first\n";
+            cout << "3. Randomly decide\n";
+            cout << "Enter your choice: ";
+            cin >> turnChoice;
+
+            // You can handle the actual setup inside this function later
+            setupComputerGame(player1, player2, turnChoice);
+        }
+        else if (gameMode == 2) {
+            // Player vs player mode
+            cout << "Enter name for Player 1: ";
+            cin >> player1;
+
+            cout << "Enter name for Player 2: ";
+            cin >> player2;
+
+            // You can handle turn setup inside here if needed
+            setupPlayerGame(player1, player2);
+        }
+        else {
+            cout << "Invalid game mode. Restarting...\n\n";
+            continue;
+        }
+
+        // Print starting board + legend
+        printBoard();
+
+        // Main game loop
+        while (true) {
+            // This function should later:
+            // - ask for a move in an easy way (ex: choose a column)
+            // - re-ask if the move is invalid
+            // - handle full columns / bad input / invalid column numbers
+            makeMove();
+
+            // Print board after every move
+            printBoard();
+
+            if (checkWin()) {
+                announceWinner();
+                break;
+            }
+
+            if (checkTie()) {
+                announceTie();
+                break;
+            }
+        }
+
+        // Ask if user wants to play again
+        playAgain = askPlayAgain();
+    }
+
+ 
     return 0;
 }
 
