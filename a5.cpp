@@ -7,21 +7,6 @@
 
 using namespace std;
 
-// Function prototypes to implement later
-void titleScreen();
-void printBoard();
-
-void setupComputerGame(string& playerName, string& computerName, int& turnChoice);
-void setupPlayerGame(string& player1, string& player2);
-
-void makeMove();
-bool checkWin();
-bool checkTie();
-
-void announceWinner();
-void announceTie();
-
-bool askPlayAgain();
 
 
 
@@ -111,6 +96,25 @@ int main(){
  
     return 0;
 }
+
+// ==========================================
+// HELPER FUNCTION DEFINITIONS
+// ==========================================
+
+void titleScreen();
+void printBoard();
+
+void setupComputerGame(string& playerName, string& computerName, int& turnChoice);
+void setupPlayerGame(string& player1, string& player2);
+
+void makeMove();
+bool checkWin();
+bool checkTie();
+
+void announceWinner();
+void announceTie();
+
+bool askPlayAgain();
 
 // ==========================================
 // PLAYER CLASS FUNCTION DEFINITIONS

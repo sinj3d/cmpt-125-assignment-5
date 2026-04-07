@@ -3,6 +3,21 @@
 #include <vector>
 #include <iostream>
 
+void titleScreen();
+void printBoard();
+
+void setupComputerGame(string& playerName, string& computerName, int& turnChoice);
+void setupPlayerGame(string& player1, string& player2);
+
+void makeMove();
+bool checkWin();
+bool checkTie();
+
+void announceWinner();
+void announceTie();
+
+bool askPlayAgain();
+
 enum class Piece{
     Empty,
     Player1,
