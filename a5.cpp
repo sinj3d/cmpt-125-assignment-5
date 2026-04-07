@@ -155,7 +155,6 @@ bool Player::useAnvil() {
 
 bool GameState::isValidMove(int col) const{
     return board[0][col] == Piece::Empty;
-    
 };
 
 GameState::GameState() : board(ROWS, std::vector<Piece>(COLS, Piece::Empty)) {
@@ -246,5 +245,37 @@ bool GameState::checkTie() const{ // check top row. If full, then tie
 };
 
 bool GameState::makeMove(int col, Piece piece){ //boolean so that isValidMove() can return to main
+    if (!isValidMove(col)) {
+        return false; 
+    }
+
+    if (piece == Piece::Player1Anvil || piece == Piece::Player2Anvil) {
+        // Anvil: destroy everything in the column
+        for (int row = 0; row < ROWS; row++) {
+            board[row][col] = Piece::Empty;
+        }
+        // Place anvil at the very bottom (ROWS - 1)
+        board[ROWS - 1][col] = piece;
+        
+        // Update lastMove for checkWin()
+        lastMove.row = ROWS - 1;
+        lastMove.col = col;
+    } 
+    else {
+        // Regular piece: start from the bottom and find the first empty slot
+        for (int row = ROWS - 1; row >= 0; row--) {
+            if (board[row][col] == Piece::Empty) {
+                
+                board[row][col] = piece; // Place the piece!
+                
+                // Update lastMove for checkWin()
+                lastMove.row = row;
+                lastMove.col = col;
+                
+                break;
+            }
+        }
+    }
     
-}; 
+    return true; // successful operation
+};
