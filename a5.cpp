@@ -9,7 +9,6 @@ using namespace std;
 
 
 int main(){
-
     
     return 0;
 }
@@ -51,7 +50,9 @@ bool Player::useAnvil() {
 // GAMESTATE CLASS FUNCTION DEFINITIONS
 // ==========================================
 
-bool GameState::isValidMove() const{};
+bool GameState::isValidMove() const{
+
+};
 
 GameState::GameState() : board(ROWS, std::vector<Piece>(COLS, Piece::Empty)) {
 
