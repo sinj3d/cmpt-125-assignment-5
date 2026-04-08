@@ -1,3 +1,18 @@
+/*
+ * Names: Shenghua Jin, Luke Choi
+ * SFU IDs: 301659564, 301658198
+ * Emails: sja204@sfu.ca, esc9@sfu.ca
+ *
+ * Statement of Originality:
+ * All the code and comments below are my (our) own original work. For any non-
+ * original work, I (we) have provided citations above and in the comments with
+ * enough detail so that someone can see the exact source and extent of the
+ * borrowed work.
+ *
+ * In addition, I (we) have not shared this work with anyone else, and I (we) have
+ * not seen solutions from other students, tutors, websites, books, etc.
+ */
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -6,6 +21,8 @@
 #include <limits>
 
 #include "a5.h"
+#include "data_collector.h"
+#include "neural_net.h"
 
 using namespace std;
 
@@ -33,19 +50,34 @@ int main() {
             cout << "Choose a game mode:" << endl;
             cout << "  1. Play against the Computer" << endl;
             cout << "  2. Play against another Player" << endl;
-            cout << "Enter your choice (1 or 2): ";
-            if (cin >> gameMode && (gameMode == 1 || gameMode == 2)) {
+            cout << "  3. Generate Training Data for NN" << endl;
+            cout << "Enter your choice (1-3): ";
+            if (cin >> gameMode && (gameMode >= 1 && gameMode <= 3)) {
                 clearInput();
                 break;
             }
-            cout << "Invalid choice. Please enter 1 or 2." << endl << endl;
+            cout << "Invalid choice. Please enter 1, 2, or 3." << endl << endl;
             clearInput();
+        }
+
+        if (gameMode == 3) {
+            int numGames, depth;
+            cout << "Enter number of games to simulate: ";
+            if (!(cin >> numGames)) numGames = 100;
+            clearInput();
+            cout << "Enter Minimax generation depth (e.g., 3 or 4): ";
+            if (!(cin >> depth)) depth = 3;
+            clearInput();
+            
+            generateDataset(numGames, depth, "dataset.csv");
+            continue; // Go back to title screen
         }
 
         Player player1, player2;
         int firstTurn = 1;
         bool isPVPmode = (gameMode == 2);
         int computerDifficulty = 3;
+        NeuralNet nn;
 
 
         if (!isPVPmode) {
@@ -64,13 +96,23 @@ int main() {
                 cout << "  1. Easy (Looks ahead 1 move)" << endl;
                 cout << "  2. Medium (Looks ahead 3 moves)" << endl;
                 cout << "  3. Hard (Looks ahead 5 moves)" << endl;
-                cout << "Enter difficulty (1-3): ";
+                cout << "  4. Neural Network (Experimental)" << endl;
+                cout << "Enter difficulty (1-4): ";
                 int diffChoice;
-                if (cin >> diffChoice && diffChoice >= 1 && diffChoice <= 3) {
+                if (cin >> diffChoice && diffChoice >= 1 && diffChoice <= 4) {
                     clearInput();
                     if (diffChoice == 1) computerDifficulty = 1;
                     if (diffChoice == 2) computerDifficulty = 3;
                     if (diffChoice == 3) computerDifficulty = 5;
+                    if (diffChoice == 4) {
+                        computerDifficulty = 4;
+                        if (!nn.loadWeights("weights.txt")) {
+                            cout << "Warning: weights.txt not found or invalid! Falling back to Easy Mode." << endl;
+                            computerDifficulty = 1;
+                        } else {
+                            cout << "Neural Network weights loaded successfully!" << endl;
+                        }
+                    }
                     break;
                 }
                 cout << "Invalid choice." << endl;
@@ -129,7 +171,12 @@ int main() {
 
             if (current.getIsComputer()) {
                 // Computer logic
-                MoveOption bestMove = game.getBestMove(computerDifficulty);
+                MoveOption bestMove;
+                if (computerDifficulty == 4) {
+                    bestMove = game.getBestMoveNN(nn);
+                } else {
+                    bestMove = game.getBestMove(computerDifficulty);
+                }
                 int col = bestMove.col;
                 if (col == -1) break; // tied/error
                 
@@ -505,6 +552,10 @@ vector<int> GameState::getValidColumns() const {
 bool GameState::getIsPVP() const { return isPVP; }
 void GameState::setIsPVP(bool pvp) { isPVP = pvp; }
 
+const vector<vector<Piece>>& GameState::getBoard() const { return board; }
+int GameState::getRows() const { return ROWS; }
+int GameState::getCols() const { return COLS; }
+
 // ==========================================
 // MINIMAX AI
 // ==========================================
@@ -705,3 +756,37 @@ MoveOption GameState::getBestMove(int depth) {
     return bestMove;
 }
 
+MoveOption GameState::getBestMoveNN(NeuralNet& nn) {
+    vector<MoveOption> legalMoves = getAllLegalMoves();
+    if (legalMoves.empty()) return {-1, false};
+
+    vector<float> input(44, 0.0f);
+    int idx = 0;
+    for (int r = 0; r < ROWS; r++) {
+        for (int c = 0; c < COLS; c++) {
+            Piece p = board[r][c];
+            int val = 0;
+            // Evaluated explicitly for Player2 (Computer)
+            if (p == Piece::Player2 || p == Piece::Player2Anvil) val = 1;
+            else if (p == Piece::Player1 || p == Piece::Player1Anvil) val = -1;
+            input[idx++] = val;
+        }
+    }
+    input[42] = player2.getHasAnvil() ? 1.0f : 0.0f;
+    input[43] = player1.getHasAnvil() ? 1.0f : 0.0f;
+
+    vector<float> preds = nn.predict(input);
+
+    float bestScore = -1000000.0f;
+    MoveOption bestMove = legalMoves[0];
+
+    for (const auto& move : legalMoves) {
+        int moveLabel = move.col + (move.useAnvil ? 7 : 0);
+        if (preds[moveLabel] > bestScore) {
+            bestScore = preds[moveLabel];
+            bestMove = move;
+        }
+    }
+    
+    return bestMove;
+}

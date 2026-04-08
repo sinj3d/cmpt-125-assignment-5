@@ -13,6 +13,7 @@ Luke: Using macOS and clang, with VS Code as the IDE
 ## Extra Features
 
 Minimax AI with variable difficulty for computer with alpha-beta pruning for better performance
+A more "human" neural network AI is also implemented
 
 ## Limitations and Known Bugs
 
