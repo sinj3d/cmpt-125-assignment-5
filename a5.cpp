@@ -27,7 +27,7 @@ int main() {
     while (playAgain) {
         titleScreen();
 
-        // --- Game Mode Selection ---2
+        // --- Game Mode Selection ---
         int gameMode = 0;
         while (true) {
             cout << "Choose a game mode:" << endl;
@@ -45,6 +45,8 @@ int main() {
         Player player1, player2;
         int firstTurn = 1;
         bool isPVPmode = (gameMode == 2);
+        int computerDifficulty = 3;
+
 
         if (!isPVPmode) {
             // --- Computer Game Setup ---
@@ -55,6 +57,25 @@ int main() {
             player1 = Player(name, "X");
             player2 = Player("Computer", "O");
             player2.setIsComputer(true);
+
+            while (true) {
+                cout << endl;
+                cout << "Select Computer Difficulty:" << endl;
+                cout << "  1. Easy (Looks ahead 1 move)" << endl;
+                cout << "  2. Medium (Looks ahead 3 moves)" << endl;
+                cout << "  3. Hard (Looks ahead 5 moves)" << endl;
+                cout << "Enter difficulty (1-3): ";
+                int diffChoice;
+                if (cin >> diffChoice && diffChoice >= 1 && diffChoice <= 3) {
+                    clearInput();
+                    if (diffChoice == 1) computerDifficulty = 1;
+                    if (diffChoice == 2) computerDifficulty = 3;
+                    if (diffChoice == 3) computerDifficulty = 5;
+                    break;
+                }
+                cout << "Invalid choice." << endl;
+                clearInput();
+            }
 
             int turnChoice = 0;
             while (true) {
@@ -107,12 +128,20 @@ int main() {
             cout << endl << current.getPlayerName() << "'s turn." << endl;
 
             if (current.getIsComputer()) {
-                // Computer: random valid column
-                int col = game.getRandomMove();
-                if (col == -1) break; // should never happen unless tied, which is handled
-                Piece piece = game.getCurrentPiece(false);
+                // Computer logic
+                MoveOption bestMove = game.getBestMove(computerDifficulty);
+                int col = bestMove.col;
+                if (col == -1) break; // tied/error
+                
+                Piece piece = game.getCurrentPiece(bestMove.useAnvil);
                 game.makeMove(col, piece);
-                cout << "Computer drops in column " << (col + 1) << "." << endl;
+                
+                if (bestMove.useAnvil) {
+                    current.useAnvil();
+                    cout << "Computer drops an ANVIL in column " << (col + 1) << "!" << endl;
+                } else {
+                    cout << "Computer drops in column " << (col + 1) << "." << endl;
+                }
 
             } else {
                 // Human turn
@@ -475,3 +504,204 @@ vector<int> GameState::getValidColumns() const {
 
 bool GameState::getIsPVP() const { return isPVP; }
 void GameState::setIsPVP(bool pvp) { isPVP = pvp; }
+
+// ==========================================
+// MINIMAX AI
+// ==========================================
+
+vector<MoveOption> GameState::getAllLegalMoves() const {
+    vector<MoveOption> moves;
+    const Player& current = (currentTurn == 1) ? player1 : player2;
+    vector<int> validCols = getValidColumns();
+    
+    // Regular moves
+    for (int col : validCols) {
+        moves.push_back({col, false});
+    }
+    
+    // Anvil moves
+    if (current.getHasAnvil()) {
+        for (int col : validCols) {
+            moves.push_back({col, true});
+        }
+    }
+    return moves;
+}
+
+int GameState::evaluateWindow(const vector<Piece>& window) const {
+    int score = 0;
+    
+    // Identify who is maximizing based on the actual object state?
+    // Wait, minimax uses computer vs human. We just evaluate from the perspective of player2 (Computer).
+    // The computer is always Player2 in PvC.
+    Piece compPiece = Piece::Player2;
+    Piece compAnvil = Piece::Player2Anvil;
+    Piece humanPiece = Piece::Player1;
+    Piece humanAnvil = Piece::Player1Anvil;
+    
+    int compCount = 0;
+    int humanCount = 0;
+    int emptyCount = 0;
+    
+    for (Piece p : window) {
+        if (p == compPiece || p == compAnvil) compCount++;
+        else if (p == humanPiece || p == humanAnvil) humanCount++;
+        else emptyCount++;
+    }
+    
+    if (compCount == 4) score += 10000;
+    else if (compCount == 3 && emptyCount == 1) score += 10;
+    else if (compCount == 2 && emptyCount == 2) score += 2;
+    
+    if (humanCount == 3 && emptyCount == 1) score -= 80;
+    
+    return score;
+}
+
+int GameState::evaluateBoard() const {
+    int score = 0;
+    
+    // Center column preference
+    int centerCol = COLS / 2;
+    int centerCount = 0;
+    for (int r = 0; r < ROWS; r++) {
+        if (board[r][centerCol] == Piece::Player2 || board[r][centerCol] == Piece::Player2Anvil) {
+            centerCount++;
+        }
+    }
+    score += centerCount * 3;
+    
+    // Horizontal windows
+    for (int r = 0; r < ROWS; r++) {
+        for (int c = 0; c < COLS - 3; c++) {
+            vector<Piece> window = {board[r][c], board[r][c+1], board[r][c+2], board[r][c+3]};
+            score += evaluateWindow(window);
+        }
+    }
+    
+    // Vertical windows
+    for (int r = 0; r < ROWS - 3; r++) {
+        for (int c = 0; c < COLS; c++) {
+            vector<Piece> window = {board[r][c], board[r+1][c], board[r+2][c], board[r+3][c]};
+            score += evaluateWindow(window);
+        }
+    }
+    
+    // Positive Diagonal (\) windows
+    for (int r = 0; r < ROWS - 3; r++) {
+        for (int c = 0; c < COLS - 3; c++) {
+            vector<Piece> window = {board[r][c], board[r+1][c+1], board[r+2][c+2], board[r+3][c+3]};
+            score += evaluateWindow(window);
+        }
+    }
+    
+    // Negative Diagonal (/) windows
+    for (int r = 0; r < ROWS - 3; r++) {
+        for (int c = 0; c < COLS - 3; c++) {
+            vector<Piece> window = {board[r+3][c], board[r+2][c+1], board[r+1][c+2], board[r][c+3]};
+            score += evaluateWindow(window);
+        }
+    }
+    
+    return score;
+}
+
+int GameState::minimax(GameState state, int depth, int alpha, int beta, bool isMaximizingPlayer) {
+    bool isWin = state.checkWin();
+    
+    if (isWin) {
+        // If someone won on the LAST turn, we see who
+        int previousTurn = (state.getCurrentTurn() == 1) ? 2 : 1;
+        if (previousTurn == 2) return 10000000; // Computer won
+        else return -10000000; // Human won
+    }
+    if (state.checkTie()) {
+        return 0;
+    }
+    if (depth == 0) {
+        return state.evaluateBoard();
+    }
+    
+    vector<MoveOption> legalMoves = state.getAllLegalMoves();
+    if (legalMoves.empty()) return 0;
+
+    if (isMaximizingPlayer) {
+        int maxEval = -20000000;
+        for (const MoveOption& move : legalMoves) {
+            GameState stateCopy = state;
+            Piece p = stateCopy.getCurrentPiece(move.useAnvil);
+            stateCopy.makeMove(move.col, p);
+            
+            if (move.useAnvil) {
+                if (stateCopy.getCurrentTurn() == 1) stateCopy.player1.useAnvil();
+                else stateCopy.player2.useAnvil();
+            }
+            
+            stateCopy.switchTurn();
+            
+            int eval = minimax(stateCopy, depth - 1, alpha, beta, false);
+            maxEval = std::max(maxEval, eval);
+            alpha = std::max(alpha, eval);
+            if (beta <= alpha) break; // Prune
+        }
+        return maxEval;
+    } else {
+        int minEval = 20000000;
+        for (const MoveOption& move : legalMoves) {
+            GameState stateCopy = state;
+            Piece p = stateCopy.getCurrentPiece(move.useAnvil);
+            stateCopy.makeMove(move.col, p);
+            
+            if (move.useAnvil) {
+                if (stateCopy.getCurrentTurn() == 1) stateCopy.player1.useAnvil();
+                else stateCopy.player2.useAnvil();
+            }
+            
+            stateCopy.switchTurn();
+            
+            int eval = minimax(stateCopy, depth - 1, alpha, beta, true);
+            minEval = std::min(minEval, eval);
+            beta = std::min(beta, eval);
+            if (beta <= alpha) break; // Prune
+        }
+        return minEval;
+    }
+}
+
+MoveOption GameState::getBestMove(int depth) {
+    // Computer is always maximizing.
+    vector<MoveOption> legalMoves = getAllLegalMoves();
+    
+    // Fallback exactly to randomness if only 1 move left or something went weird
+    if (legalMoves.empty()) return {-1, false};
+
+    int bestScore = -20000000;
+    MoveOption bestMove = legalMoves[0];
+    
+    int alpha = -20000000;
+    int beta = 20000000;
+
+    for (const MoveOption& move : legalMoves) {
+        GameState stateCopy = *this; // Value copy
+        Piece p = stateCopy.getCurrentPiece(move.useAnvil);
+        stateCopy.makeMove(move.col, p);
+        
+        if (move.useAnvil) {
+            if (stateCopy.getCurrentTurn() == 1) stateCopy.player1.useAnvil();
+            else stateCopy.player2.useAnvil();
+        }
+        
+        stateCopy.switchTurn();
+        
+        int score = minimax(stateCopy, depth - 1, alpha, beta, false);
+        
+        if (score > bestScore) {
+            bestScore = score;
+            bestMove = move;
+        }
+        alpha = std::max(alpha, score);
+    }
+    
+    return bestMove;
+}
+

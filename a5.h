@@ -16,6 +16,12 @@ struct Coordinate {
     int col;
 };
 
+struct MoveOption {
+    int col;
+    bool useAnvil;
+};
+
+
 class Player {
 private:
     std::string playerName;
@@ -72,7 +78,13 @@ public:
     Piece getCurrentPiece(bool isAnvil) const;
     int getRandomMove() const;
     std::vector<int> getValidColumns() const;
-    
+    std::vector<MoveOption> getAllLegalMoves() const;
+
+    int evaluateWindow(const std::vector<Piece>& window) const;
+    int evaluateBoard() const;
+    int minimax(GameState state, int depth, int alpha, int beta, bool isMaximizingPlayer);
+    MoveOption getBestMove(int depth);
+
     bool getIsPVP() const;
     void setIsPVP(bool pvp);
 };

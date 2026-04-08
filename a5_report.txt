@@ -7,22 +7,19 @@
 
 ## Platform and Tools
 
-what operating system(s) (e.g. Windows, macOS, Linux), compiler(s) (e.g. g++,
-clang++, etc.), and editor/IDE(s) (e.g. VS Code, Sublime Text, etc.) did you
-use?
-Shenghua: Using Windows and G++, with VS Code as my main editor.
+Shenghua: Using Windows and G++, with VS Code as my main editor. Google antigravity for code-debugging and linting.
 Luke: Using macOS and clang, with VS Code as the IDE
 
 ## Extra Features
 
-if your program has any extra or special features, tell us about them here
+Minimax AI with variable difficulty for computer with alpha-beta pruning for better performance
 
 ## Limitations and Known Bugs
 
 
 ## Help and References
 
-AI for syntax examples of the code
+AI for syntax help of the code and to ask structural questions
 
 ## Statement of Originality
 
