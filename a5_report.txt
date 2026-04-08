@@ -15,12 +15,17 @@ Luke: Using macOS and clang, with VS Code as the IDE
 Minimax AI with variable difficulty for computer with alpha-beta pruning for better performance
 A more "human" neural network AI is also implemented
 
-## Limitations and Known Bugs
+## External Work and Repository
+
+The training logic for the Neural Network involved external Python scripts and PyTorch, which were intentionally omitted from this submission to ensure compliance with the "standard C++ only" and "assignment makefile" submission constraints. Only the resulting `weights.txt` remains alongside the pure C++ inference engine.
+
+If you would like to view the training scripts or the complete development history, please visit our GitHub repository:
+https://github.com/sinj3d/cmpt-125-assignment-5
 
 
 ## Help and References
 
-AI for syntax help of the code and to ask structural questions
+AI for syntax help of the code and to ask structural questions.
 
 ## Statement of Originality
 
