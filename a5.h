@@ -3,22 +3,7 @@
 #include <vector>
 #include <iostream>
 
-void titleScreen();
-void printBoard();
-
-void setupComputerGame(string& playerName, string& computerName, int& turnChoice);
-void setupPlayerGame(string& player1Name, string& player2Name);
-
-void makeMove();
-bool checkWin();
-bool checkTie();
-
-void announceWinner();
-void announceTie();
-
-bool askPlayAgain();
-
-enum class Piece{
+enum class Piece {
     Empty,
     Player1,
     Player2,
@@ -31,46 +16,63 @@ struct Coordinate {
     int col;
 };
 
-class Player{
-    private:
-        std::string playerName;
-        std::string playerSymbol; // Will still enforce one letter, but string makes concatenation easier down the line
-        bool hasAnvil;
-        bool isComputer;
-    public:
-        Player(){};
-        ~Player(){};
+class Player {
+private:
+    std::string playerName;
+    std::string playerSymbol;
+    bool hasAnvil = true;
+    bool isComputer = false;
 
-        bool getHasAnvil() const;
-        std::string getPlayerSymbol() const;
-        std::string getPlayerName() const;
-        std::string getPlayerSymbolFormatted(bool isAnvil, int line) const;
+public:
+    Player();
+    Player(std::string playerName, std::string playerSymbol);
+    ~Player();
 
-        bool useAnvil();
+    bool getHasAnvil() const;
+    std::string getPlayerSymbol() const;
+    std::string getPlayerName() const;
+    std::string getPlayerSymbolFormatted(bool isAnvil, int line) const;
 
+    bool useAnvil();
+    void setIsComputer(bool val);
+    bool getIsComputer() const;
 };
 
-class GameState{
-    private:
-        bool isPVP;
-        Player player1;
-        Player player2;
-        
-        const int ROWS = 6;
-        const int COLS = 7;
-        std::vector<std::vector<Piece>> board;
+class GameState {
+private:
+    bool isPVP = true;
+    Player player1;
+    Player player2;
+    int currentTurn = 1;
 
-        Coordinate lastMove; //helps speed up checkWin by just checking the area around our last move
+    const int ROWS = 6;
+    const int COLS = 7;
+    std::vector<std::vector<Piece>> board;
 
-        bool isValidMove(int col) const;
-    public:
-        GameState();
-        GameState(Player player1, Player player2);
-        ~GameState();
+    Coordinate lastMove;
 
-        void renderGame() const;
-        bool checkWin() const;
-        bool checkTie() const;
+    bool isValidMove(int col) const;
 
-        bool makeMove(int col, Piece piece); //boolean so that isValidMove() can return to main
+public:
+    GameState();
+    GameState(Player player1, Player player2);
+    ~GameState();
+
+    void renderGame() const;
+    bool checkWin() const;
+    bool checkTie() const;
+    bool makeMove(int col, Piece piece);
+
+    void switchTurn();
+    int getCurrentTurn() const;
+    void setCurrentTurn(int turn);
+    Player& getCurrentPlayer();
+    const Player& getPlayer1() const;
+    const Player& getPlayer2() const;
+    Piece getCurrentPiece(bool isAnvil) const;
+    int getRandomMove() const;
+    std::vector<int> getValidColumns() const;
+    
+    bool getIsPVP() const;
+    void setIsPVP(bool pvp);
 };
